@@ -20,7 +20,7 @@ We conducted a comprehensive evaluation of MBTF-NAS on seven representative mult
 The experimental results demonstrate that MBTF-NAS consistently outperforms state-of-the-art approaches, highlighting its effectiveness and generalizability.
 ## 🏗️Model
 <div align="center">
-  <img src="model.png" />
+  <img src="model.jpg" />
 </div>
 
 
