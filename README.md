@@ -168,18 +168,6 @@ We list below the works most relevant to this paper, including but not limited t
 - Core structure-guided multi-modal classification via monte carlo tree search, _IJMLC25_, [[paper]](https://link.springer.com/article/10.1007/s13042-025-02606-z)
 - LogicNAS: Multi-view neural architecture search method for image sequence logic prediction, _IEEE TETCI25_, [[paper]](https://ieeexplore.ieee.org/document/11262275)
 
-
-**_Others_**
-- Enhancing multimodal learning via hierarchical fusion architecture search with inconsistency mitigation, _IEEE TIP25_, [[paper]](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=11134693)
-- Enhanced protein secondary structure prediction through multi-view multi-feature evolutionary deep fusion method, _IEEE TETCI25_, [[paper]](https://ieeexplore.ieee.org/abstract/document/10839444)
-- MFAS: Multimodal fusion architecture search, _CVPR19_, [[paper]](https://openaccess.thecvf.com/content_CVPR_2019/papers/Perez-Rua_MFAS_Multimodal_Fusion_Architecture_Search_CVPR_2019_paper.pdf)
-- BM-NAS: Bilevel multimodal neural architecture search, _AAAI22_, [[paper]](https://ojs.aaai.org/index.php/AAAI/article/view/20872)
-- Deep multimodal neural architecture search, _ACMMM20_, [[paper]](https://dl.acm.org/doi/10.1145/3394171.3413977)
-- Hierarchical multi-modal fusion architecture search for stock market forecasting, _Applied Soft Computing25_, [[paper]](https://www.sciencedirect.com/science/article/pii/S1568494625008920?casa_token=TZOWE_icAokAAAAA:YH8vB-WqZC03tYf8DV6WaVqMH78aoprjybDSwEDQlF6nSJ0SrQrf1lFh-OHwzHDiYu-iFHz38U8)
-- Harmonic-NAS: Hardware-aware multimodal neural architecture search on resource-constrained devices, _ACML23_, [[paper]](https://proceedings.mlr.press/v222/ghebriout24a/ghebriout24a.pdf)
-- Multi-view information fusion based on federated multi-objective neural architecture search for MRI semantic segmentation, _IF25_, [[paper]](https://www.sciencedirect.com/science/article/abs/pii/S1566253525003744)
-- Automatic fused multimodal deep learning for plant identification, _Frontiers in Plant Science25_, [[paper]](https://arxiv.org/pdf/2406.01455?)
-
 <!-- ## 🙏 Acknowledgement -->
 
 
