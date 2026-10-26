@@ -25,13 +25,25 @@ The experimental results demonstrate that MBTF-NAS consistently outperforms stat
 
 
 ## 🖥️ Computing Environment
-The computing environment includes Ubuntu 24.04.2 LTS as the operating system, equipped with an AMD EPYC processor with 160 physical cores (320 logical threads), 566 GB of DDR4 memory, and 8 NVIDIA GeForce RTX 5090 GPUs, each with 32 GB of VRAM.
 
+The experiments were conducted on a workstation running Ubuntu 22.04.5 LTS, equipped with an AMD EPYC 7763 64-Core Processor, 503 GB of memory, and 8 NVIDIA GeForce RTX 4090 GPUs, each with 24 GB of VRAM.
 
 ## 🧪 Experimental Setup
-In our experiments,
-- For the label noise learning comparison experiments, to ensure consistency with existing methods, we implement all experiments using the PyTorch framework (PyTorch 2.8.0+cu128, Python 3.10.18, CUDA 12.8).
-- For the multi-view learning comparison experiments, we implement all experiments using TensorFlow framework (TensorFlow 2.10.0 GPU, Python 3.9.23, CUDA 11.2).
+
+All reproduced experiments were implemented using TensorFlow 2.5.0. The software environment was based on Python 3.7.0, CUDA runtime 11.0, and cuDNN 8.
+
+To facilitate reproducibility, the common implementation settings for MBTF-NAS are summarized below. Unless otherwise specified, the following default settings are used:
+
+| Parameter | Default value |
+| :--- | :--- |
+| Batch size | 256 |
+| Maximum training epochs | 150 |
+| Early-stopping patience | 20 epochs |
+| Crossover rate | 0.9 |
+| Mutation rate | 0.2 |
+| Retained ratio in top-$\rho$ zero-cost screening | $\rho = 0.6$ |
+
+Other dataset-specific settings are provided in the corresponding dataset-specific experimental analyses.
 
   
 
@@ -57,50 +69,83 @@ For these five multi-view datasets, we only provide the original clean data. You
 #### 1.2 CIFAR-10N and CIFAR-100N Datasets
 The CIFAR-10N and CIFAR-100N datasets used in this work can be downloaded from http://noisylabels.com.
 
-### 2 Experiment Workflow
-To alleviate the FEB problem caused by label noise, we adopt a two-stage strategy of gradient space detection + feature space calibration to purify the given dataset.The specific procedure is as follows:
-- Step 1: Train the anchor model with the noisy dataset.
-- Step 2: Perform outlier detection on the noisy dataset and regard outlier samples as potential noisy samples.
-- Step 3: Remove potential noisy samples from the noisy dataset to obtain a trusted dataset, and retrain the anchor model.
-- Step 4: Use the retrained anchor model to correct the labels of potential noisy samples.
-- Step 5: Retrain the anchor model with the purified dataset.
+### 2 Experimental Workflow
 
-#### 2.1 Gradient and Feature Dual-Perception Framework
-##### 2.1.1 Multi-view Datasets
-Taking the first fold of Reuters5 as an example, since we manually inject noise into the multi-view dataset, two data files are required during the data preparation phase. One is _R5/test_1/noisy dataset_, which stores the dataset with injected noise; the other is _R5/test_1/purified dataset_, which saves the dataset processed by the data purification strategy. This two datasets differ from the original multi-view dataset only in the training labels.
-```bash
-- python /code-tensorflow/A_Step_0.py
-- python /code-tensorflow/A_Step_1.py
-- python /code-tensorflow/A_Step_2.py
-- python /code-tensorflow/A_Step_3.py
-- python /code-tensorflow/A_Step_4.py
-- python /code-tensorflow/A_Step_5.py
-```
+MBTF-NAS automatically searches for effective multi-modal fusion architectures using multi-branch tree encoding, learnable modality weights, and a screening-then-training evaluation strategy. The overall procedure is as follows:
 
-##### 2.1.2 CIFAR Datasets with Label Noise
-```bash
-- python /code-pytorch/cifar-10-100n/z_step_1.py --noise_type aggre --noise_path /mnt/disk1/lishuai/EA-Dataset/CIFAR-10/CIFAR-10_human.pt --dataset cifar10 --seed 0 --is_human
-- python /code-pytorch/cifar-10-100n/z_step_2.py --noise_type aggre --noise_path /mnt/disk1/lishuai/EA-Dataset/CIFAR-10/CIFAR-10_human.pt --dataset cifar10 --seed 0 --is_human
-- python /code-pytorch/cifar-10-100n/z_step_3.py --noise_type aggre --noise_path /mnt/disk1/lishuai/EA-Dataset/CIFAR-10/CIFAR-10_human.pt --dataset cifar10 --seed 0 --is_human
-- python /code-pytorch/cifar-10-100n/z_step_4.py --noise_type aggre --noise_path /mnt/disk1/lishuai/EA-Dataset/CIFAR-10/CIFAR-10_human.pt --dataset cifar10 --seed 0 --is_human
-- python /code-pytorch/cifar-10-100n/z_step_5.py --noise_type aggre --noise_path /mnt/disk1/lishuai/EA-Dataset/CIFAR-10/CIFAR-10_human.pt --dataset cifar10 --seed 0 --is_human
-```
+- Step 1: Prepare the multi-modal features and labels, and organize the training, validation, and test splits according to the experimental protocol of each dataset.
+- Step 2: Randomly initialize a population of multi-branch fusion trees, where leaf nodes represent modality inputs and internal nodes represent fusion operators.
+- Step 3: Decode each candidate tree into a fusion network with feature projection layers and learnable modality weights.
+- Step 4: Compute expressivity and progressivity scores for randomly initialized candidate networks, and aggregate the two proxy rankings to obtain a zero-cost ranking score.
+- Step 5: Train only the top-ranked candidates selected by the top-$\rho$ screening strategy, and evaluate their validation performance as fitness. Assign zero fitness to the remaining candidates without training.
+- Step 6: Generate offspring through tournament selection, subtree crossover, and node-level mutation. Repeat zero-cost screening and training-based evaluation, and retain the best individuals for the next generation.
+- Step 7: Select the best fusion network after the final generation and evaluate its performance on the held-out test set.
 
-#### 2.2 The EMVC Method Based on Purified Dataset
-```bash
-- python /code-tensorflow/train_tree.py
-```
+#### 2.1 Data Preparation
 
+The experiments cover seven multi-modal benchmarks:
+
+- HARM-P
+- HARM-C
+- NUS-WIDE-128
+- EgoGesture
+- NTU RGB-D
+- MM-IMDB
+- MV-RML2016.10a
+
+For each dataset, prepare the corresponding modality features and labels. Ensure that samples from different modalities are aligned and that the feature arrays follow the same sample order.
+
+Use the dataset-specific splits, feature representations, and evaluation protocols described in the paper. For MM-IMDB, preserve the multi-label annotations required for movie genre classification.
+
+#### 2.2 Multi-Branch Fusion Architecture Construction
+
+Each candidate architecture is represented as a multi-branch tree. Internal nodes can combine two or more child representations, allowing flexible fusion topologies across multiple modalities.
+
+The supported fusion operators include:
+
+- Concatenation
+- Addition
+- Multiplication
+- Maximum
+- Average
+
+During decoding, modality features are projected into a common feature dimension and weighted using learnable modality weights. The tree is evaluated recursively from its leaves to the root to obtain the final fused representation for classification.
+
+#### 2.3 Zero-Cost Screening and Candidate Training
+
+Before training, each candidate network is evaluated under random initialization using synthetic Gaussian inputs. Expressivity measures feature diversity, while progressivity measures its growth across network depth.
+
+The two proxy rankings are combined using the population-wise log-rank strategy. Only the top $\lceil \rho M \rceil$ candidates are selected for training, where $M$ is the size of the candidate population.
+
+By default, $\rho = 0.6$, meaning that approximately 60% of candidates proceed to training. The remaining candidates receive zero fitness without training.
+
+Selected candidates are trained on the training split and evaluated on the validation split to obtain their fitness values.
+
+#### 2.4 Evolutionary Search
+
+Binary tournament selection is used to select parents. Subtree crossover exchanges substructures between parent trees, while node-level mutation modifies fusion operators or modality inputs.
+
+After evaluating the offspring, the parent and offspring populations are combined, and the top $N$ individuals are retained for the next generation.
+
+Previously evaluated architectures are cached to avoid repeated evaluation, and candidate training tasks are parallelized to improve search efficiency.
+
+#### 2.5 Final Evaluation
+
+After the specified number of generations, the individual with the highest fitness is selected as the final fusion network.
+
+The selected model is evaluated on the held-out test set using the dataset-specific metrics described in the paper.
 
 
 ## 📑Citation
 If you find this repository useful, please cite our paper:
 ```
-@inproceedings{li2026Gradient,
-title={Evolutionary Multi-View Classification with Label Noise via Gradient and Feature Dual-Perception},
-author={Shuai Li, Xinyan Liang, Yuhua Qian, Li Lv},
-booktitle={Forty-third International Conference on Machine Learning},
-year={2026},
+@article{SuMBTF,
+  title={Multi-branch tree-based fusion neural architecture search with zero-cost screen for multi-modal classification},
+  author={Guo, Qian and Su, Quanchen and Liang, Xinyan and Qian, Yuhua and Li, Nan and Cui, Zhihua},
+  journal={IEEE Transactions on Image Processing}, 
+  year={2026},
+  volume={35},
+  pages={7192--7205},
 }
 ```
 
