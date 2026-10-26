@@ -47,27 +47,38 @@ Other dataset-specific settings are provided in the corresponding dataset-specif
 
   
 
-## 🎞️Experiment
-In this experiment, we aim to verify whether the proposed method can effectively purify the data and alleviate the FEB problem.
+## 🎞️ Experiments
+
+We evaluate MBTF-NAS on seven multi-modal and multi-view benchmarks to assess its classification performance, search efficiency, and generalization across diverse tasks. The experiments also examine the contributions of multi-branch tree encoding, learnable modality weights, and zero-cost screening.
+
 ### 1 Data
 
-#### 1.1 Multi-view Datasets
-We used five multi-view datasets in this experiment:
+#### 1.1 Multi-Modal and Multi-View Datasets
 
-| Datasets            | Dataset URL                                            |    Password      | 
-|---------------------|--------------------------------------------------------|------------------|
-| MVoxCeleb           | [link](https://pan.baidu.com/s/1k6DN1m64bnrRfLK8RiFmqQ)|     ls12         |
-| YoutubeFace         | [link](https://pan.baidu.com/s/1SVTWfHpAUdFWwiU5o-kD7Q)|     ls34         | 
-| NUS-WIDE-128 (NUS)  | [link](https://pan.baidu.com/s/1udO5jvolHIbd8lOV3w4SYA)|     ls56         | 
-| Reuters5            | [link](https://pan.baidu.com/s/1j8pmo88vXsO9pBWQiHVmYA)|     ls78         | 
-| Reuters3            | [link](https://pan.baidu.com/s/1ti4OWqXTVnPDhsZ7VjahGQ)|     ls10         | 
+The datasets used in our experiments are summarized below. The links point to the source datasets or their associated project pages.
 
+| Dataset | Task | Source |
+| :--- | :--- | :--- |
+| HARM-P | Harmful meme classification | [MOMENTA project](https://github.com/LCS2-IIITD/MOMENTA) |
+| HARM-C | Harmful meme classification | [MOMENTA project](https://github.com/LCS2-IIITD/MOMENTA) |
+| NUS-WIDE-128 | Multi-view image classification | [Dataset page](https://v2.imag-njust.net/resource/NUS-wide/) |
+| EgoGesture | Egocentric hand gesture recognition | [Dataset page](https://nlpr.ia.ac.cn/iva/yfzhang/datasets/egogesture.html) |
+| NTU RGB-D | Human action recognition | [Dataset page](https://rose1.ntu.edu.sg/dataset/actionRecognition/) |
+| MM-IMDB | Multi-label movie genre classification | [Dataset project](https://github.com/johnarevalo/gmu-mmimdb) |
+| MV-RML2016.10a | Automatic modulation classification | [Source RadioML dataset](https://www.deepsig.ai/datasets/) |
 
-For these five multi-view datasets, we only provide the original clean data. You can generate noisy versions with our official noise injection code, or add noise flexibly based on your own experimental needs.
+#### 1.2 Data Preparation
 
+Our experiments use the dataset-specific feature representations, data splits, and evaluation protocols described in the paper.
 
-#### 1.2 CIFAR-10N and CIFAR-100N Datasets
-The CIFAR-10N and CIFAR-100N datasets used in this work can be downloaded from http://noisylabels.com.
+- **HARM-P and HARM-C:** Prepare the image and text representations and the corresponding labels for the binary and three-class classification settings.
+- **NUS-WIDE-128:** Use the single-label subset and multi-view feature representations specified in the paper.
+- **EgoGesture:** Prepare the RGB and depth features following the cross-subject evaluation protocol.
+- **NTU RGB-D:** Prepare the video and skeleton features following the evaluation protocol described in the paper.
+- **MM-IMDB:** Prepare the movie poster and plot description features, retaining the multi-label annotations for the 23 selected genres.
+- **MV-RML2016.10a:** Construct the multi-view representations from RadioML 2016.10a using features extracted by AWN, MCLDNN, ResNet, LSTM, and GRU.
+
+Ensure that feature arrays from different modalities or views are aligned with the same sample order and labels.
 
 ### 2 Experimental Workflow
 
